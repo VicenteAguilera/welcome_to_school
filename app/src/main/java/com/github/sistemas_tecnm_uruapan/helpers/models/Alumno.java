@@ -5,24 +5,21 @@ public class Alumno
     String id;
     String nombre;
     String carrera;
-
     String telefono;
     int status;
-
-
 
     public Alumno(String id, String carrera, String nombre, String telefono) {
         this.id = id;
         this.nombre = nombre;
         this.carrera = carrera;
-
+        this.telefono=telefono;
         status=0;
     }
-    public Alumno(String id, String nombre, String carrera, String grupo,int status) {
+    public Alumno(String id, String nombre, String carrera, String telefono,int status) {
         this.id = id;
         this.nombre = nombre;
         this.carrera = carrera;
-
+        this.telefono=telefono;
         this.status=status;
     }
 

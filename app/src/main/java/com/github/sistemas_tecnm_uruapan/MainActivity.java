@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.MediaScannerConnection;
@@ -13,29 +14,31 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-
 import com.airbnb.lottie.LottieAnimationView;
+import com.github.sistemas_tecnm_uruapan.helpers.interfaces.Information;
+import com.github.sistemas_tecnm_uruapan.helpers.models.Alumno;
+import com.github.sistemas_tecnm_uruapan.helpers.utility.Encriptacion;
+import com.github.sistemas_tecnm_uruapan.helpers.utility.StringHelper;
+import com.github.sistemas_tecnm_uruapan.repository.FirestoreHelper;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
-import com.salvador.graduationitsucreateqr.helpers.interfaces.Information;
-import com.salvador.graduationitsucreateqr.helpers.models.Alumno;
-import com.salvador.graduationitsucreateqr.repository.FirestoreHelper;
-
 import net.glxn.qrgen.android.QRCode;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Objects;
+
 
 
 public class MainActivity extends AppCompatActivity implements Information {
@@ -46,9 +49,13 @@ public class MainActivity extends AppCompatActivity implements Information {
     private ImageView imageView;
     private Bitmap bitmap;
     private String qr;
+    private String nombreQR;
     private final FirestoreHelper firestoreHelper = new FirestoreHelper();
-    LottieAnimationView animationView2;
 
+    LottieAnimationView animationView2;
+    private final StringHelper stringHelper = new StringHelper();
+    private Alumno alumno;
+    private File imagen;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements Information {
         imageView.setVisibility(View.INVISIBLE);
         animationView2 = findViewById(R.id.animationView2);
         animationView2.setVisibility(View.INVISIBLE);
-        setTitle(R.string.graduaci_n_itsu);
+        setTitle(R.string.nuevo_ingreso);
 
 
         buttonGuardar.setOnClickListener(new View.OnClickListener()
@@ -82,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements Information {
                 }
                 else
                 {
-                    Snackbar.make(view, "Debes buscar la invitación primero.", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(view, "Debes buscar el pase primero.", Snackbar.LENGTH_LONG).show();
                 }
             }
         });
@@ -91,7 +98,27 @@ public class MainActivity extends AppCompatActivity implements Information {
             @Override
             public void onClick(View view)
             {
-                showDialogBuscar();
+                 /*ProgressDialog dialog = ProgressDialog.show(MainActivity.this, "",
+                    "Buscando...", true);
+                firestoreHelper.sendAllInformation(MainActivity.this,dialog);*/
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Atención")
+                        .setMessage("Para poder descagar tu pase o visualizalo, debes de ingresar un número de teléfono para que el TecNM campus Uruapan, pueda contactarte." +
+                                "\nEn el campo NÚMERO DE TELÉFONO deberás ingresarlo, si ya ingresaste uno anteriormente deja el campo vacío.")
+
+                        // Specifying a listener allows you to take an action before dismissing the dialog.
+                        // The dialog is automatically dismissed when a dialog button is clicked.
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                showDialogBuscar();
+                            }
+                        })
+
+                        // A null listener allows the button to dismiss the dialog and take no further action.
+                        .setNegativeButton(android.R.string.no, null)
+                        //.setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+
             }
         });
 
@@ -111,19 +138,49 @@ public class MainActivity extends AppCompatActivity implements Information {
         Button buttonBuscar = view.findViewById(R.id.buttonBuscar);
         Button buttonClose = view.findViewById(R.id.buttonClose);
         TextInputLayout textInput_numeroCtrl = view.findViewById(R.id.textInput_numeroCtrl);
+        TextInputLayout textInput_numeroTelefono = view.findViewById(R.id.textInput_numeroTelefono);
 
-
+        textWatcher(textInput_numeroCtrl,textInput_numeroTelefono);
         buttonBuscar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                ProgressDialog dialog = ProgressDialog.show(com.salvador.graduationitsucreateqr.MainActivity.this, "",
+                ProgressDialog dialog = ProgressDialog.show(MainActivity.this, "",
                         "Buscando...", true);
                 dialog.show();
                 String numerodecontrol = textInput_numeroCtrl.getEditText().getText().toString();
-                if(numerodecontrol.length()==8)
+                String numerodetelefono = textInput_numeroTelefono.getEditText().getText().toString();
+                if(stringHelper.isCtrolNumber(numerodecontrol))
                 {
-                    firestoreHelper.getData(numerodecontrol,dialog, com.salvador.graduationitsucreateqr.MainActivity.this, com.salvador.graduationitsucreateqr.MainActivity.this);
+                    if(stringHelper.isPhone(numerodetelefono))
+                    {
+                        firestoreHelper.addPhone(numerodecontrol,numerodetelefono,dialog,MainActivity.this, MainActivity.this);
+                        Log.e("err","Entre2");
+                    }
+                    else if(numerodetelefono.length()==0)
+                    {
+                        firestoreHelper.getData(numerodecontrol, dialog, MainActivity.this, MainActivity.this);
+                        Log.e("err","Entre1");
+                    }
+                    else
+                    {
+
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle("Atención")
+                                .setMessage("Introduzca un número de teléfono de 10 dígitos o deje el campo en blanco.")
+                                // Specifying a listener allows you to take an action before dismissing the dialog.
+                                // The dialog is automatically dismissed when a dialog button is clicked.
+                                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        showDialogBuscar();
+                                    }
+                                })
+                                .setCancelable(false)
+                                .show();
+
+                        dialog.dismiss();
+                    }
                     dialogSearchInvitation.dismiss();
                 }
                 else
@@ -165,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements Information {
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     // Permission Granted
                     // Rutina que se ejecuta al aceptar
-                    String nombre = "Invitación Graduación ITSU";
+                    String nombre = "Pase TecNM campus Uruapan";
                     try {
                         saveImage(bitmap, nombre);
                     } catch (IOException e) {
@@ -173,15 +230,16 @@ public class MainActivity extends AppCompatActivity implements Information {
                     }
                 }else{
                     // Permission Denied
-                    Snackbar.make(findViewById(android.R.id.content), "Para guardar la invitación necesita conceder los permisos.", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(findViewById(android.R.id.content), "Para guardar el pase necesita conceder los permisos.", Snackbar.LENGTH_SHORT).show();
                 }
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
-    private void saveImage(Bitmap bitmap, @NonNull String name) throws IOException {
+    private Uri saveImage(Bitmap bitmap, @NonNull String name) throws IOException {
         OutputStream outputStream;
+        Uri uri;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContentResolver contentResolver = getApplicationContext().getContentResolver();
             ContentValues contentValues = new ContentValues();
@@ -190,25 +248,25 @@ public class MainActivity extends AppCompatActivity implements Information {
             contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
             Uri imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
             outputStream = contentResolver.openOutputStream(Objects.requireNonNull(imageUri));
+            uri=imageUri;
 
-        }
-        else {
-            String imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath()+"/";
-            File dir = new File(imagesDir, "Invitación ITSU" );
+        } else {
+            String imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/";
+            File dir = new File(imagesDir, "Pase ITSU");
             if (!dir.exists()) {
                 dir.mkdirs();
             }
             File image = new File(dir, name + ".jpg");
             outputStream = new FileOutputStream(image);
             MakeSureFileWasCreatedThenMakeAvaliable(image);
-
+            uri=Uri.fromFile(image);
         }
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
         Objects.requireNonNull(outputStream).close();
         Snackbar.make(findViewById(android.R.id.content), "Imagen guardada en galeria.", Snackbar.LENGTH_LONG).show();
         //Toast.makeText(getApplicationContext(),"Imagen guardada en galeria.",Toast.LENGTH_SHORT).show();
+        return  uri;
     }
-
     /**
      * Metodo para actualizar la galería
      * @param file imagen a guardar
@@ -231,7 +289,8 @@ public class MainActivity extends AppCompatActivity implements Information {
         {
             animationView2.setVisibility(View.VISIBLE);
             animationView2.playAnimation();
-            Snackbar.make(animationView2.getRootView(), "Felicidades Ingeniero ITSU", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(animationView2.getRootView(), "Bienvenido al TecNM campus Uruapan", Snackbar.LENGTH_LONG).show();
+
         }
         else
         {
@@ -244,13 +303,102 @@ public class MainActivity extends AppCompatActivity implements Information {
     public void getData(Alumno alumno)
     {
         //creacion de QR
+
         if(alumno!=null)
         {
-            qr=alumno.getId()+"|"+alumno.getNombre()+"|"+alumno.getCarrera();//consulta a firebase
-            bitmap = QRCode.from(qr).withSize(400, 400).bitmap();
-            imageView.setImageBitmap(bitmap);
-            imageView.setVisibility(View.VISIBLE);
+            if(alumno.getTelefono().length()==0)
+            {
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Atención")
+                        .setMessage("Debes de ingresar un número de teléfono para poder descargar tu pase ya que no hay ninguno registrado.")
+                        // Specifying a listener allows you to take an action before dismissing the dialog.
+                        // The dialog is automatically dismissed when a dialog button is clicked.
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                showDialogBuscar();
+                            }
+                        })
+                        .setCancelable(false)
+                        .show();
+
+
+            }
+            else {
+                this.alumno=alumno;
+                qr = alumno.getId() + "|" + alumno.getNombre() + "|" + alumno.getCarrera();//consulta a firebase
+                nombreQR = alumno.getNombre() + "-" + StringHelper.obtenerFecha();
+                bitmap = QRCode.from(new Encriptacion().encryptAE(qr)).withSize(400, 400).bitmap();
+                imageView.setImageBitmap(bitmap);
+                imageView.setVisibility(View.VISIBLE);
+            }
+
         }
 
     }
+    public void textWatcher(TextInputLayout textInput_numeroCtrol, TextInputLayout textInput_numeroTelefono)
+    {
+        textInput_numeroTelefono.getEditText().addTextChangedListener(
+                new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
+                    {
+                        if(charSequence.length()==0)
+                        {
+                            textInput_numeroTelefono.setError("Campo vacío");
+                        }
+                        else if(!stringHelper.isPhone(charSequence.toString()))
+                        {
+                            textInput_numeroTelefono.setError("Teléfono inválido");
+                        }
+                        else
+                        {
+                            textInput_numeroTelefono.setError(null);
+                        }
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+
+                    }
+                }
+        );
+
+        textInput_numeroCtrol.getEditText().addTextChangedListener(
+                new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
+                    {
+                        if(charSequence.length()==0)
+                        {
+                            textInput_numeroCtrol.setError("Campo vacío");
+                        }
+                        else if(!stringHelper.isCtrolNumber(charSequence.toString()))
+                        {
+                            textInput_numeroCtrol.setError("Numero de control inválido");
+                        }
+                        else
+                        {
+                            textInput_numeroCtrol.setError(null);
+                        }
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+
+                    }
+                }
+        );
+    }
+
 }

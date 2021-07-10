@@ -5,11 +5,15 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.github.sistemas_tecnm_uruapan.MainActivity;
 import com.github.sistemas_tecnm_uruapan.R;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -22,6 +26,7 @@ import com.github.sistemas_tecnm_uruapan.helpers.models.Alumno;
 import com.github.sistemas_tecnm_uruapan.helpers.utility.StringHelper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -30,6 +35,40 @@ public class FirestoreHelper
 {
     private static FirebaseFirestore db = FirebaseFirestore.getInstance();
     private static final CollectionReference AlumnosCollection = db.collection("alumnos");
+    public void addPhone(String doc,String telefono,final ProgressDialog dialog, final Information information, final Context context)
+    {
+        AlumnosCollection.document(doc).update("telefono", telefono)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if(task.isComplete()) {
+                            dialog.dismiss();
+                            final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                            alertDialogBuilder.setCancelable(false);
+                            alertDialogBuilder.setTitle("Actualización Exitosa");
+                            alertDialogBuilder.setMessage("Teléfono actualizado, ahora da click en BUSCAR PASE para obtener tu pase de acceso.");
+                            alertDialogBuilder.setPositiveButton("Buscar Pase",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface alertDialog, int i) {
+                                            getData(doc, dialog, information, context);
+                                            alertDialog.cancel();
+                                        }
+                                    }
+                            );
+                            alertDialogBuilder.show();
+
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        information.status("Error de actualización");
+                        dialog.dismiss();
+                    }
+                });
+    }
     public void getData(String document, final ProgressDialog dialog, final Information information, final Context context)
     {
         dialog.show();
@@ -41,30 +80,32 @@ public class FirestoreHelper
                     if (Objects.requireNonNull(document).exists())
                     {
                         Map<String,Object> data=document.getData();
-                        Alumno alumno = new  Alumno(document.getId(),String.valueOf(data.get("nombre")),String.valueOf(data.get("carrera")),String.valueOf(data.get("grupo")));
-                        final AlertDialog.Builder  alertDialogBuilder = new AlertDialog.Builder(context);
-                        alertDialogBuilder.setCancelable(false);
-                        alertDialogBuilder.setTitle("Datos Obtenidos");
-                        alertDialogBuilder.setMessage("NCtrol: "+alumno.getId()+"\n"+
-                                                      "Nombre: "+alumno.getNombre()+"\n"+
-                                                      "Carrera: "+StringHelper.getCarrara(alumno.getCarrera()) +"\n"+
-                                                      "Grupo: "+alumno.getTelefono()+"\n"+
-                                                      "Si existe algún error, comunícate con el jefe de carrera de ISC.\n"+
-                                                         R.string.correo_jefe+"\n\n"+
-                                                      "Comparte la imagen con tu invitado ya que en la entrada será requerida.");
-                        alertDialogBuilder.setPositiveButton("Aceptar",
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface alertDialog, int i)
-                                    {
-                                        information.status("fiesta");
-                                        alertDialog.cancel();
+                        Log.e("er",document.getData().toString());
+                        Alumno alumno = new  Alumno(document.getId(),String.valueOf(data.get("nombre")),String.valueOf(data.get("carrera")),String.valueOf(data.get("telefono")));
+                        if(alumno.getTelefono().length()!=0) {
+                            final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                            alertDialogBuilder.setCancelable(false);
+                            alertDialogBuilder.setTitle("Datos Obtenidos");
+                            alertDialogBuilder.setMessage("NCtrol: " + alumno.getId() + "\n" +
+                                    "Nombre: " + alumno.getNombre() + "\n" +
+                                    "Carrera: " + alumno.getCarrera() + "\n" +
+                                    "Telefono: " + alumno.getTelefono() + "\n\n" +
+                                    "Si existe algún error, comunícate con el jefe de carrera de ISC.\njuanandrade@tecuruapan.edu.mx \n");
+                            alertDialogBuilder.setPositiveButton("Aceptar",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface alertDialog, int i) {
+                                            information.status("fiesta");
+                                            alertDialog.cancel();
+                                        }
                                     }
-                                }
-                        );
-                        alumno.setCarrera(StringHelper.getCarrara(alumno.getCarrera()));
+                            );
+                            //alumno.setCarrera(alumno.getCarrera());
+                            alertDialogBuilder.show();
+                        }
                         information.getData(alumno);
-                        alertDialogBuilder.show();
+
+
 
                     }
                     else
@@ -72,8 +113,7 @@ public class FirestoreHelper
                         final AlertDialog.Builder  alertDialogBuilder = new AlertDialog.Builder(context);
                         alertDialogBuilder.setCancelable(false);
                         alertDialogBuilder.setTitle("Error de Obtención");
-                        alertDialogBuilder.setMessage("No hay Información acerca del número de control ingresado, comunícate con el jefe de carrera de ISC."+
-                                R.string.correo_jefe);
+                        alertDialogBuilder.setMessage("No hay Información acerca del número de control ingresado, comunícate con el jefe de carrera de ISC. juanandrade@tecuruapan.edu.mx");
                         alertDialogBuilder.setPositiveButton("Aceptar",
                                 new DialogInterface.OnClickListener() {
                                     @Override
@@ -111,14 +151,14 @@ public class FirestoreHelper
         for(int i =0;i<stringHelper.getData().size();i++)
         {
             nycRef = AlumnosCollection.document(alumnos.get(i).getId());
-            batch.set(nycRef, new Alumno2());
+            //*batch.set(nycRef, new Alumno2());*/
 
-            /*Map<String,Object> data = new HashMap<>();
+            Map<String,Object> data = new HashMap<>();
             data.put("nombre",alumnos.get(i).getCarrera());
-            data.put("grupo",alumnos.get(i).getGrupo());
+            data.put("telefono",alumnos.get(i).getTelefono());
             data.put("carrera",alumnos.get(i).getNombre());
             data.put("status",alumnos.get(i).getStatus());
-            batch.update(nycRef,data);*/
+            batch.update(nycRef,data);
         }
         batch.commit().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -126,7 +166,7 @@ public class FirestoreHelper
             {
                 if(task.isComplete())
                 {
-                    information.status(alumnos.size()+" escritos con exito");
+                    information.status(alumnos.size()+" escritos con éxito");
                     dialog.dismiss();
                 }
             }
@@ -139,16 +179,16 @@ public class FirestoreHelper
     {
         String nombre;
         String carrera;
-        String grupo;
+        String telefono;
         int status;
         public Alumno2()
         {
 
         }
-        public Alumno2(String nombre, String carrera, String grupo,int status) {
+        public Alumno2(String nombre, String carrera, String telefono,int status) {
             this.nombre = nombre;
             this.carrera = carrera;
-            this.grupo = grupo;
+            this.telefono = telefono;
             this.status=status;
         }
 
@@ -163,10 +203,9 @@ public class FirestoreHelper
             return carrera;
         }
 
-        public String getGrupo() {
-            return grupo;
+        public String getTelefono() {
+            return telefono;
         }
-
     }
 
 }

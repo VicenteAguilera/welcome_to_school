@@ -40,10 +40,11 @@ import java.io.OutputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import static com.salvador.graduationitsucreateqr.helpers.flipper.MediaStoreCompat.Status.DELETE;
+
+import static com.github.sistemas_tecnm_uruapan.helpers.flipper.MediaStoreCompat.Status.DELETE;
 
 
-@SuppressWarnings("unused")
+
 public class MediaStoreCompat {
 
     private Context context;

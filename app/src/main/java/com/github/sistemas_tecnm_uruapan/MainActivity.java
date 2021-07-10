@@ -40,7 +40,6 @@ import java.io.OutputStream;
 import java.util.Objects;
 
 
-
 public class MainActivity extends AppCompatActivity implements Information {
 
     private final int REQUEST_CODE_ASK_PERMISSION = 111;

@@ -81,14 +81,14 @@ public class MainActivity extends AppCompatActivity implements Information {
                 if(bitmap!=null)
                 {
                     if (solicitarPermiso()) {
-                        String nombre = "Invitación Graduación ITSU";
+                        String nombre = "Pase curso de inducción TecNM campus Uruapan";
                         try {
                             saveImage(bitmap, nombre);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }else {
-                        //Toast.makeText(getApplicationContext(),"Para guardar la invitación necesita conceder los permisos.",Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(),"Para guardar el pase necesita conceder los permisos.",Toast.LENGTH_LONG).show();
                     }
                 }
                 else
@@ -256,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements Information {
 
         } else {
             String imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/";
-            File dir = new File(imagesDir, "Pase ITSU");
+            File dir = new File(imagesDir, "Pase TecNM campus Uruapan");
             if (!dir.exists()) {
                 dir.mkdirs();
             }

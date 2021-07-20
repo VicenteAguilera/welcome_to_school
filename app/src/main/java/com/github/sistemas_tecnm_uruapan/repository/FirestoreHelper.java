@@ -153,12 +153,12 @@ public class FirestoreHelper
             nycRef = AlumnosCollection.document(alumnos.get(i).getId());
             //*batch.set(nycRef, new Alumno2());*/
 
-            Map<String,Object> data = new HashMap<>();
+            /*Map<String,Object> data = new HashMap<>();
             data.put("nombre",alumnos.get(i).getCarrera());
             data.put("telefono",alumnos.get(i).getTelefono());
             data.put("carrera",alumnos.get(i).getNombre());
             data.put("status",alumnos.get(i).getStatus());
-            batch.update(nycRef,data);
+            batch.update(nycRef,data);*/
         }
         batch.commit().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override

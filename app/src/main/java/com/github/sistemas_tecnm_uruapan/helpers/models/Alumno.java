@@ -6,16 +6,16 @@ public class Alumno
     String nombre;
     String carrera;
     String telefono;
-    int status;
+    String status;
 
     public Alumno(String id, String carrera, String nombre, String telefono) {
         this.id = id;
         this.nombre = nombre;
         this.carrera = carrera;
         this.telefono=telefono;
-        status=0;
+        this.status="";
     }
-    public Alumno(String id, String nombre, String carrera, String telefono,int status) {
+    public Alumno(String id, String nombre, String carrera, String telefono,String status) {
         this.id = id;
         this.nombre = nombre;
         this.carrera = carrera;
@@ -54,11 +54,12 @@ public class Alumno
     public void setTelefono(String telefono) {
         this.telefono = telefono;
     }
-    public int getStatus() {
+
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 }

@@ -157,7 +157,7 @@ public class FirestoreHelper
             data.put("nombre",alumnos.get(i).getCarrera());
             data.put("telefono",alumnos.get(i).getTelefono());
             data.put("carrera",alumnos.get(i).getNombre());
-            data.put("status",alumnos.get(i).getStatus());
+            data.put("fechasAsistencia",alumnos.get(i).getStatus());
             batch.update(nycRef,data);*/
         }
         batch.commit().addOnCompleteListener(new OnCompleteListener<Void>() {

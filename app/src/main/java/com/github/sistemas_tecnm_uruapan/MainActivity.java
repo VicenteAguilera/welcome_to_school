@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements Information {
                 if(bitmap!=null)
                 {
                     if (solicitarPermiso()) {
-                        String nombre = "Pase curso de inducción TecNM campus Uruapan";
+                        String nombre = "PASE CURSO INDUCCION ITSU - "+nombreQR;
                         try {
                             saveImage(bitmap, nombre);
                         } catch (IOException e) {

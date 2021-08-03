@@ -1,26 +1,26 @@
 package com.github.sistemas_tecnm_uruapan.helpers.models;
 
-public class Alumno
-{
+public class Alumno {
     String id;
     String nombre;
     String carrera;
     String telefono;
     String status;
 
-    public Alumno(String id, String carrera, String nombre, String telefono) {
+    public Alumno(String id, String nombre, String carrera, String telefono) {
         this.id = id;
         this.nombre = nombre;
         this.carrera = carrera;
-        this.telefono=telefono;
-        this.status="";
+        this.telefono = telefono;
+        this.status = "";
     }
-    public Alumno(String id, String nombre, String carrera, String telefono,String status) {
+
+    public Alumno(String id, String nombre, String carrera, String telefono, String status) {
         this.id = id;
         this.nombre = nombre;
         this.carrera = carrera;
-        this.telefono=telefono;
-        this.status=status;
+        this.telefono = telefono;
+        this.status = status;
     }
 
     public String getId() {

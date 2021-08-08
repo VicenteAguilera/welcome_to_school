@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements Information {
                 if(bitmap!=null)
                 {
                     if (solicitarPermiso()) {
-                        String nombre = "PASE CURSO INDUCCION ITSU - "+nombreQR;
+                        String nombre = nombreQR;
                         try {
                             saveImage(bitmap, nombre);
                         } catch (IOException e) {
@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements Information {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContentResolver contentResolver = getApplicationContext().getContentResolver();
             ContentValues contentValues = new ContentValues();
-            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name + ".jpg");
+            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME,"PASE CURSO INDUCCION ITSU - "+name + ".jpg");
             contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg");
             contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
             Uri imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
@@ -256,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements Information {
 
         } else {
             String imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/";
-            File dir = new File(imagesDir, "Pase TecNM campus Uruapan");
+            File dir = new File(imagesDir, "PASE CURSO INDUCCION ITSU");
             if (!dir.exists()) {
                 dir.mkdirs();
             }
@@ -267,7 +267,7 @@ public class MainActivity extends AppCompatActivity implements Information {
         }
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
         Objects.requireNonNull(outputStream).close();
-        Snackbar.make(findViewById(android.R.id.content), "Imagen guardada en galeria.", Snackbar.LENGTH_LONG).show();
+        Snackbar.make(findViewById(android.R.id.content), "Imagen guardada en galeria. El título del QR es tu nombre.", Snackbar.LENGTH_LONG).show();
         //Toast.makeText(getApplicationContext(),"Imagen guardada en galeria.",Toast.LENGTH_SHORT).show();
         return  uri;
     }

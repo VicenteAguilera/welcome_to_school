@@ -226,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements Information {
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     // Permission Granted
                     // Rutina que se ejecuta al aceptar
-                    String nombre = "Pase TecNM campus Uruapan";
+                    String nombre = nombreQR;
                     try {
                         saveImage(bitmap, nombre);
                     } catch (IOException e) {
